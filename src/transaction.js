@@ -1,4 +1,4 @@
-var arkjs = require('arkjs');
+var personajs = require('personajs');
 var account = require('./account');
 var network = require('./network');
 var leveldb = require('./leveldb');
@@ -17,11 +17,11 @@ function get(req, res, next) {
 function createBip38(req, res, next) {
   account.getBip38Keys(req.params.userid, req.params.bip38).
     then(function(acc){
-      var transaction = arkjs.transaction.createTransaction(req.params.recipientId, req.params.amount, null, "dummy");
+      var transaction = personajs.transaction.createTransaction(req.params.recipientId, req.params.amount, null, "dummy");
       transaction.senderPublicKey = acc.keys.getPublicKeyBuffer().toString("hex");
       delete transaction.signature;
-      arkjs.crypto.sign(transaction, acc.keys);
-      transaction.id = arkjs.crypto.getId(transaction);
+      personajs.crypto.sign(transaction, acc.keys);
+      transaction.id = personajs.crypto.getId(transaction);
       leveldb.
         setObject(transaction.id, transaction).
         then(function(){
@@ -50,7 +50,7 @@ function createBip38(req, res, next) {
 
 function create(req, res, next) {
   var amount = parseInt(req.params.amount);
-  var transaction = arkjs.transaction.createTransaction(req.params.recipientId, amount, null, req.params.passphrase);
+  var transaction = personajs.transaction.createTransaction(req.params.recipientId, amount, null, req.params.passphrase);
   leveldb.
     setObject(transaction.id, transaction).
     then(function(){
@@ -92,7 +92,7 @@ function broadcast(req, res, next) {
   } else leveldb.getObject(req.params.id).
     then(function(transaction){
       transaction = transaction || req.params;
-      if (!arkjs.crypto.verify(transaction)) {
+      if (!personajs.crypto.verify(transaction)) {
         res.send({
           success: false,
           error: "transaction does not verify",

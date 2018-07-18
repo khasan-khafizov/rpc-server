@@ -38,7 +38,7 @@ function restrictHost(req, res, next){
 }
 
 function startServer(port){
-  if (program.allowRemote) console.log('Warning! ark-rpc allows remote connections, this is potentially insecure!');
+  if (program.allowRemote) console.log('Warning! persona-rpc allows remote connections, this is potentially insecure!');
 
   server = restify.createServer().
     use(restrictHost).
@@ -56,7 +56,7 @@ function startServer(port){
     server.post('/:network/broadcast', transaction.broadcast);
 
     server.listen(port, function() {
-      console.log('ark-rpc listening at %s', server.url);
+      console.log('persona-rpc listening at %s', server.url);
     });
 }
 

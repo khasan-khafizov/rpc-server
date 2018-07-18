@@ -1,39 +1,39 @@
 {
-  "name": "ark-rpc",
+  "name": "persona-rpc",
   "version": "1.0.0",
-  "description": "RPC server acting as lite client for ARK blockchain",
+  "description": "RPC server acting as lite client for Persona blockchain",
   "main": "server.js",
   "scripts": {
     "test": "mocha",
     "start": "nodemon ./server.js"
   },
   "bin": {
-    "ark-rpc": "./server.js"
+    "persona-rpc": "./server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arkecosystem/ark-rpc.git"
+    "url": "git+https://github.com/Persona-blockchain/rpc-server.git"
   },
   "keywords": [
-    "ark",
+    "persona",
     "blockchain",
     "rpc"
   ],
-  "author": "fx thoorens",
+  "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/arkecosystem/ark-rpc/issues"
+    "url": "https://github.com/Persona-blockchain/rpc-server/issues"
   },
-  "homepage": "https://github.com/arkecosystem/ark-rpc#readme",
+  "homepage": "https://github.com/Persona-blockchain/rpc-server#readme",
   "dependencies": {
-    "arkjs": "github:arkecosystem/ark-js#master",
-    "async": "^2.6.0",
+    "async": "^2.6.1",
     "bigi": "^1.4.2",
     "bip38": "^2.0.2",
     "bip39": "^2.5.0",
     "commander": "^2.15.1",
     "leveldown": "^2.1.1",
     "levelup": "^2.0.2",
+    "personajs": "github:PersonaIam/persona-js#master",
     "request": "^2.85.0",
     "restify": "^6.4.0"
   },

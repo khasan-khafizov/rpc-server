@@ -2,40 +2,42 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../server');
-const arkjs = require('arkjs');
+const personajs = require('personajs');
 const bip39 = require('bip39');
 
 chai.should();
 chai.use(chaiHttp);
 
+
+
 describe('Accounts', () => {
 
-  describe('/GET account', () => {
-    it('it should GET account with a given address on mainnet', (done) => {
+    describe('/GET account', () => {
+      it('it should GET account with a given address on mainnet', (done) => {
       chai.request(server).
-      get('/mainnet/account/AUDud8tvyVZa67p3QY7XPRUTjRGnWQQ9Xv').
+      get('/mainnet/account/PFiYxjjF3VhxqWZLGpTzYBrpmkuNHMfK8t').
       end((err, res) => {
         res.should.have.status(200);
         res.body.success.should.be.equal(true);
-        res.body.account.address.should.be.equal("AUDud8tvyVZa67p3QY7XPRUTjRGnWQQ9Xv");
+        res.body.account.address.should.be.equal("PFiYxjjF3VhxqWZLGpTzYBrpmkuNHMfK8t");
         done();
       });
-    });
+    }).timeout(0);
 
     it('it should GET account with a given address on devnet', (done) => {
       chai.request(server).
-      get('/devnet/account/DGihocTkwDygiFvmg6aG8jThYTic47GzU9').
+      get('/devnet/account/TeXVihzdph4TT39kdaoLZTu8LFx87emYos').
       end((err, res) => {
         res.should.have.status(200);
         res.body.success.should.be.equal(true);
-        res.body.account.address.should.be.equal("DGihocTkwDygiFvmg6aG8jThYTic47GzU9");
+        res.body.account.address.should.be.equal("TeXVihzdph4TT39kdaoLZTu8LFx87emYos");
         done();
       });
-    });
+    }).timeout(0);
 
     // it('STRESSTEST: it should GET 50000 accounts on devnet', (done) => {
     //   for(var i=0; i<50000; i++){
-    //     var address = arkjs.crypto.getKeys(bip39.generateMnemonic()).getAddress();
+    //     var address = personajs.crypto.getKeys(bip39.generateMnemonic()).getAddress();
     //     chai.request(server).
     //     get('/devnet/account/'+address).
     //     end((err, res) => {
@@ -45,7 +47,7 @@ describe('Accounts', () => {
     //       done();
     //     });
     //   }
-      
+
     // });
   });
 
@@ -59,11 +61,11 @@ describe('Accounts', () => {
       end((err, res) => {
         res.should.have.status(200);
         res.body.success.should.be.equal(true);
-        res.body.account.address.should.be.equal("AUdAwTiByRp5BFyGz9uxXuNYa1KGHT4rmt");
+        res.body.account.address.should.be.equal("PMSUSwFQhCe7M8S3maaA3v5ii9ZT4RHTmk");
         res.body.account.publicKey.should.be.equal("03675c61dcc23eab75f9948c6510b54d34fced4a73d3c9f2132c76a29750e7a614");
         done();
       });
-    });
+    }).timeout(0);
 
     var bip38address = null;
     var bip38backup = null;
@@ -85,7 +87,7 @@ describe('Accounts', () => {
         bip38backup = res.body.wif;
         done();
       });
-    });
+    }).timeout(0);
 
     it('it should find bip38 backup from userid', (done) => {
       chai.request(server).
@@ -97,7 +99,7 @@ describe('Accounts', () => {
         bip38backup = res.body.wif.should.equal(bip38backup);
         done();
       });
-    });
+    }).timeout(0);
 
     it('it should create transaction from bip38 backup using userid', (done) => {
       chai.request(server).
@@ -106,17 +108,17 @@ describe('Accounts', () => {
         bip38: "master password",
         userid,
         amount: 1000000000,
-        recipientId: "AUDud8tvyVZa67p3QY7XPRUTjRGnWQQ9Xv"
+        recipientId: "PMSUSwFQhCe7M8S3maaA3v5ii9ZT4RHTmk"
       }).
       end((err, res) => {
         process.stdout.write(".");
         res.should.have.status(200);
         res.body.success.should.be.equal(true);
-        res.body.transaction.recipientId.should.equal("AUDud8tvyVZa67p3QY7XPRUTjRGnWQQ9Xv");
-        arkjs.crypto.verify(res.body.transaction).should.be.equal(true);
+        res.body.transaction.recipientId.should.equal("PMSUSwFQhCe7M8S3maaA3v5ii9ZT4RHTmk");
+        personajs.crypto.verify(res.body.transaction).should.be.equal(true);
         done();
       });
-    });
+    }).timeout(0);
 
     it('it should create an account on devnet', (done) => {
       chai.request(server).
@@ -127,11 +129,11 @@ describe('Accounts', () => {
       end((err, res) => {
         res.should.have.status(200);
         res.body.success.should.be.equal(true);
-        res.body.account.address.should.be.equal("DHzPqDoCwh4CuHwtA6FBvnH3yY7sJmZ54P");
+        res.body.account.address.should.be.equal("TnA7H8XaWBjkLty13CEfPJ5NdhPprxGKnP");
         res.body.account.publicKey.should.be.equal("03675c61dcc23eab75f9948c6510b54d34fced4a73d3c9f2132c76a29750e7a614");
         done();
       });
-    });
+    }).timeout(0);
   });
 
 });

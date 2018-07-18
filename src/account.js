@@ -1,4 +1,4 @@
-var arkjs = require('arkjs');
+var personajs = require('personajs');
 var bip39 = require('bip39');
 var bip38 = require('bip38');
 var BigInteger = require('bigi');
@@ -30,7 +30,7 @@ function getTransactions(req, res, next) {
 
 function getBip38Account(req, res, next){
   leveldb.
-    getUTF8(arkjs.crypto.sha256(Buffer.from(req.params.userid)).toString('hex')).
+    getUTF8(personajs.crypto.sha256(Buffer.from(req.params.userid)).toString('hex')).
     then(function(wif){
       res.send({
         success: true,
@@ -49,11 +49,11 @@ function getBip38Account(req, res, next){
 
 function getBip38Keys(userid, bip38password){
   return leveldb.
-    getUTF8(arkjs.crypto.sha256(Buffer.from(userid)).toString('hex')).
+    getUTF8(personajs.crypto.sha256(Buffer.from(userid)).toString('hex')).
     then(function(wif){
       if(wif){
         var decrypted = bip38.decrypt(wif.toString('hex'), bip38password + userid);
-        var keys = new arkjs.ECPair(BigInteger.fromBuffer(decrypted.privateKey), null);
+        var keys = new personajs.ECPair(BigInteger.fromBuffer(decrypted.privateKey), null);
 
         return Promise.resolve({
           keys,
@@ -70,9 +70,9 @@ function createBip38(req, res, next) {
   if(req.params.bip38 && req.params.userid){
     getBip38Keys(req.params.userid, req.params.bip38).
       catch(function(){
-        keys = arkjs.crypto.getKeys(bip39.generateMnemonic());
+        keys = personajs.crypto.getKeys(bip39.generateMnemonic());
         var encryptedWif = bip38.encrypt(keys.d.toBuffer(32), true, req.params.bip38 + req.params.userid);
-        leveldb.setUTF8(arkjs.crypto.sha256(Buffer.from(req.params.userid)).toString("hex"), encryptedWif);
+        leveldb.setUTF8(personajs.crypto.sha256(Buffer.from(req.params.userid)).toString("hex"), encryptedWif);
 
         return Promise.resolve({
           keys,
@@ -109,12 +109,12 @@ function createBip38(req, res, next) {
 function create(req, res, next) {
   var account = null;
   if(req.params.passphrase){
-    account = arkjs.crypto.getKeys(req.params.passphrase);
+    account = personajs.crypto.getKeys(req.params.passphrase);
     res.send({
       success: true,
       account: {
         publicKey: account.publicKey,
-        address: arkjs.crypto.getAddress(account.publicKey)
+        address: personajs.crypto.getAddress(account.publicKey)
       }
     });
     next();

@@ -3,7 +3,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../server');
-const arkjs = require('arkjs');
+const personajs = require('personajs');
 chai.should();
 
 chai.use(chaiHttp);
@@ -13,7 +13,7 @@ describe('Transactions', () => {
   describe('/GET transaction', () => {
     it('it should GET last account transactions on mainnet', (done) => {
       chai.request(server).
-        get('/mainnet/transactions/AUDud8tvyVZa67p3QY7XPRUTjRGnWQQ9Xv').
+        get('/mainnet/transactions/PSPqkmiAektdxygkricdG96GirPhm8BGXd').
         end((err, res) => {
           res.should.have.status(200);
           res.body.success.should.be.equal(true);
@@ -21,19 +21,19 @@ describe('Transactions', () => {
           res.body.transactions.length.should.be.above(3);
           done();
         });
-    });
+    }).timeout(0);
 
     it('it should GET last account transactions on devnet', (done) => {
       chai.request(server).
-        get('/devnet/transactions/DGihocTkwDygiFvmg6aG8jThYTic47GzU9').
+        get('/devnet/transactions/TnGxBjNL9NDXFRjeNEk4gkze2ykYGnYUnF').
         end((err, res) => {
           res.should.have.status(200);
           res.body.success.should.be.equal(true);
           res.body.count.should.be.above(30);
-          res.body.transactions.length.should.be.above(30);
+          res.body.transactions.length.should.be.above(3);
           done();
         });
-    });
+    }).timeout(0);
 
   });
 
@@ -44,18 +44,18 @@ describe('Transactions', () => {
         post('/mainnet/transaction').
         send({
           amount: 100000000,
-          recipientId: "AUDud8tvyVZa67p3QY7XPRUTjRGnWQQ9Xv",
+          recipientId: "PFiYxjjF3VhxqWZLGpTzYBrpmkuNHMfK8t",
           passphrase: "This is a test"
         }).
         end((err, res) => {
           res.should.have.status(200);
           res.body.success.should.be.equal(true);
-          res.body.transaction.recipientId.should.equal("AUDud8tvyVZa67p3QY7XPRUTjRGnWQQ9Xv");
+          res.body.transaction.recipientId.should.equal("PFiYxjjF3VhxqWZLGpTzYBrpmkuNHMfK8t");
           mainnettx = res.body.transaction;
-          arkjs.crypto.verify(mainnettx).should.be.equal(true);
+          personajs.crypto.verify(mainnettx).should.be.equal(true);
           done();
         });
-    });
+    }).timeout(0);
 
     it('it should broadcast tx on mainnet', (done) => {
       chai.request(server).
@@ -66,7 +66,7 @@ describe('Transactions', () => {
           res.body.success.should.be.equal(true);
           done();
         });
-    });
+    }).timeout(0);
 
     let devnettx = null;
     it('it should create tx on devnet and tx should verify', (done) => {
@@ -74,18 +74,18 @@ describe('Transactions', () => {
         post('/devnet/transaction').
         send({
           amount: 100000000,
-          recipientId: "DGihocTkwDygiFvmg6aG8jThYTic47GzU9",
+          recipientId: "TnGxBjNL9NDXFRjeNEk4gkze2ykYGnYUnF",
           passphrase: "This is a test"
         }).
         end((err, res) => {
           res.should.have.status(200);
           res.body.success.should.be.equal(true);
-          res.body.transaction.recipientId.should.equal("DGihocTkwDygiFvmg6aG8jThYTic47GzU9");
+          res.body.transaction.recipientId.should.equal("TnGxBjNL9NDXFRjeNEk4gkze2ykYGnYUnF");
           devnettx = res.body.transaction;
-          arkjs.crypto.verify(devnettx).should.be.equal(true);
+          personajs.crypto.verify(devnettx).should.be.equal(true);
           done();
         });
-    });
+    }).timeout(0);
 
     it('it should broadcast tx on devnet', (done) => {
       chai.request(server).
@@ -96,7 +96,7 @@ describe('Transactions', () => {
           res.body.success.should.be.equal(true);
           done();
         });
-    });
+    }).timeout(0);
 
     it('it should broadcast tx on devnet the old way', (done) => {
       chai.request(server).
@@ -110,7 +110,7 @@ describe('Transactions', () => {
           res.body.transactionIds[0].should.be.equal(devnettx.id);
           done();
         });
-    });
+    }).timeout(0);
 
 
   });
