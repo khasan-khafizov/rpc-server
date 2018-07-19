@@ -1,5 +1,3 @@
-![PERSONA-RPC]()
-
 ### RPC server implementation to easily connect to PERSONA blockchain
 
 # Security Warning
@@ -24,7 +22,7 @@ docker run -d -p 8080:8080 persona-rpc --allow-remote
 ```
 
 # API
-Supported networks are `mainnet` and `devnet` all calls should start with the network you want to address, for instance,  `/mainnet/account/AUDud8tvyVZa67p3QY7XPRUTjRGnWQQ9Xv` we call it `:network` in the API description.
+Supported networks are `mainnet` and `testnet` all calls should start with the network you want to address, for instance,  `/mainnet/account/PFiYxjjF3VhxqWZLGpTzYBrpmkuNHMfK8t` we call it `:network` in the API description.
 
 ## Accounts
 - Get account balance from `address`: `GET /:network/account/:address`

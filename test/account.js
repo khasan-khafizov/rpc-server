@@ -24,9 +24,9 @@ describe('Accounts', () => {
       });
     }).timeout(0);
 
-    it('it should GET account with a given address on devnet', (done) => {
+    it('it should GET account with a given address on testnet', (done) => {
       chai.request(server).
-      get('/devnet/account/TeXVihzdph4TT39kdaoLZTu8LFx87emYos').
+      get('/testnet/account/TeXVihzdph4TT39kdaoLZTu8LFx87emYos').
       end((err, res) => {
         res.should.have.status(200);
         res.body.success.should.be.equal(true);
@@ -35,11 +35,11 @@ describe('Accounts', () => {
       });
     }).timeout(0);
 
-    // it('STRESSTEST: it should GET 50000 accounts on devnet', (done) => {
+    // it('STRESSTEST: it should GET 50000 accounts on testnet', (done) => {
     //   for(var i=0; i<50000; i++){
     //     var address = personajs.crypto.getKeys(bip39.generateMnemonic()).getAddress();
     //     chai.request(server).
-    //     get('/devnet/account/'+address).
+    //     get('/testnet/account/'+address).
     //     end((err, res) => {
     //       res.should.have.status(200);
     //       res.body.success.should.be.equal(true);
@@ -120,9 +120,9 @@ describe('Accounts', () => {
       });
     }).timeout(0);
 
-    it('it should create an account on devnet', (done) => {
+    it('it should create an account on testnet', (done) => {
       chai.request(server).
-      post('/devnet/account').
+      post('/testnet/account').
       send({
         passphrase: "this is a test"
       }).

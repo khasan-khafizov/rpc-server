@@ -23,9 +23,9 @@ describe('Transactions', () => {
         });
     }).timeout(0);
 
-    it('it should GET last account transactions on devnet', (done) => {
+    it('it should GET last account transactions on testnet', (done) => {
       chai.request(server).
-        get('/devnet/transactions/TnGxBjNL9NDXFRjeNEk4gkze2ykYGnYUnF').
+        get('/testnet/transactions/TnGxBjNL9NDXFRjeNEk4gkze2ykYGnYUnF').
         end((err, res) => {
           res.should.have.status(200);
           res.body.success.should.be.equal(true);
@@ -68,10 +68,10 @@ describe('Transactions', () => {
         });
     }).timeout(0);
 
-    let devnettx = null;
-    it('it should create tx on devnet and tx should verify', (done) => {
+    let testnettx = null;
+    it('it should create tx on testnet and tx should verify', (done) => {
       chai.request(server).
-        post('/devnet/transaction').
+        post('/testnet/transaction').
         send({
           amount: 100000000,
           recipientId: "TnGxBjNL9NDXFRjeNEk4gkze2ykYGnYUnF",
@@ -81,16 +81,16 @@ describe('Transactions', () => {
           res.should.have.status(200);
           res.body.success.should.be.equal(true);
           res.body.transaction.recipientId.should.equal("TnGxBjNL9NDXFRjeNEk4gkze2ykYGnYUnF");
-          devnettx = res.body.transaction;
-          personajs.crypto.verify(devnettx).should.be.equal(true);
+          testnettx = res.body.transaction;
+          personajs.crypto.verify(testnettx).should.be.equal(true);
           done();
         });
     }).timeout(0);
 
-    it('it should broadcast tx on devnet', (done) => {
+    it('it should broadcast tx on testnet', (done) => {
       chai.request(server).
-        post('/devnet/broadcast').
-        send(devnettx).
+        post('/testnet/broadcast').
+        send(testnettx).
         end((err, res) => {
           res.should.have.status(200);
           res.body.success.should.be.equal(true);
@@ -98,16 +98,16 @@ describe('Transactions', () => {
         });
     }).timeout(0);
 
-    it('it should broadcast tx on devnet the old way', (done) => {
+    it('it should broadcast tx on testnet the old way', (done) => {
       chai.request(server).
-        post('/devnet/broadcast').
+        post('/testnet/broadcast').
         send({
-          transactions: [devnettx]
+          transactions: [testnettx]
         }).
         end((err, res) => {
           res.should.have.status(200);
           res.body.success.should.be.equal(true);
-          res.body.transactionIds[0].should.be.equal(devnettx.id);
+          res.body.transactionIds[0].should.be.equal(testnettx.id);
           done();
         });
     }).timeout(0);

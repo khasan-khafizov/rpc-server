@@ -6,8 +6,8 @@ var network = null,
   server = null;
 
 var networks = {
-  devnet: {
-    name: "devnet",
+  testnet: {
+    name: "testnet",
     nethash: "b4e87739ca85f7eabf844a643930573e9a2dd9da291662e74d26962b5c3f0ed9",
     slip44: 1,
     version: 66,
