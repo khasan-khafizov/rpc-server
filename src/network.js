@@ -8,7 +8,7 @@ var network = null,
 var networks = {
   testnet: {
     name: "testnet",
-    nethash: "b4e87739ca85f7eabf844a643930573e9a2dd9da291662e74d26962b5c3f0ed9",
+    nethash: "a6a53c0da7822012da6de41cdcaef2ecad885c7df2fc97011e5c40c5684f80a9",
     slip44: 1,
     version: 66,
     peers: [
