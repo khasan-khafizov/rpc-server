@@ -60,16 +60,17 @@ function getFromNode(url, cb) {
 function findEnabledPeers(cb) {
   var peers = [];
   getFromNode('/peer/list', function (err, response, body) {
-    if (err || body == undefined) {
-      cb(peers);
-    }
-    var respeers = JSON.parse(body).peers.
-    filter(function (peer) {
-      return peer.status == "OK";
-    }).
-    map(function (peer) {
-      return `${peer.ip}:${peer.port}`;
-    });
+      var body = JSON.parse(body);
+
+      if (err || !body || !body.peers) {
+          return cb(peers);
+      }
+  console.log(body);
+      var respeers = body.peers.filter(function (peer) {
+          return peer.status == "OK";
+      }).map(function (peer) {
+          return `${peer.ip}:${peer.port}`;
+      });
     async.each(respeers, function (peer, eachcb) {
       getFromNode(`http://${peer}/api/blocks/getHeight`, function (error, res, body2) {
         if (!error && body2 != "Forbidden") {
@@ -105,7 +106,7 @@ function postTransaction(transaction, cb) {
 
 function broadcast(transaction, callback) {
   network.peers.slice(0, 10).forEach(function (peer) {
-    // Console.log("sending to", peer);
+
     request({
       url: `http://${peer}/peer/transactions`,
       headers: {
@@ -116,9 +117,10 @@ function broadcast(transaction, callback) {
       method: 'POST',
       json: true,
       body: {transactions: [transaction]}
+    }, function(err, res, body) {
+        callback(body)
     });
   });
-  callback();
 }
 
 

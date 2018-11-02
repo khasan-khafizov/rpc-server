@@ -90,14 +90,14 @@ function broadcast(req, res, next) {
                 error: "transaction does not verify",
                 transaction
             });
-            next();
+            return next();
         }
-        network.broadcast(transaction, function () {
+        network.broadcast(transaction, function (broadcastResult) {
             res.send({
                 success: true,
                 transaction
             });
-            next();
+            return next();
         });
     }).catch(function (err) {
         res.send({
