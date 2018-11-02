@@ -55,6 +55,15 @@ function startServer(port){
     server.post('/:network/transaction', transaction.create);
     server.post('/:network/broadcast', transaction.broadcast);
 
+    // returns block at given height
+    server.get('/:network/peek/blocks/:height', transaction.peekBlocks);
+
+    // returns the tx at given cursor (i-th overall, no filtering)
+    server.get('/:network/peek/transactions/:cursor', transaction.peekTransactions);
+
+    // returns no more than 1000 tx that occurred at or after the given block height
+    server.get('/:network/transactions/fromHeight/:height', transaction.transactionsFrom);
+
     server.listen(port, function() {
       console.log('persona-rpc listening at %s', server.url);
     });
