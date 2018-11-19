@@ -31,14 +31,14 @@ function createBip38(req, res, next) {
         }).catch(function (err) {
             res.send({
                 success: false,
-                err
+                err : err
             });
             next();
         });
     }).catch(function (err) {
         res.send({
             success: false,
-            err
+            err : err
         });
         next();
     });
@@ -102,7 +102,7 @@ function broadcast(req, res, next) {
     }).catch(function (err) {
         res.send({
             success: false,
-            err
+            err : 'Transaction not found in the local database'
         });
         next();
     });
@@ -139,8 +139,7 @@ function peekTransactions(req, res, next) {
     })
 }
 
-function transactionsFrom(req, res, next) {
-
+function transactionsFromHeight(req, res, next) {
     let body = {};
     // we must retrieve tx after the previous block,
     // because tx are created before the corresponding (hosting) blocks, we must use the previous block's timestamp as the cutoff point
@@ -206,5 +205,5 @@ module.exports = {
     getAll,
     peekBlocks,
     peekTransactions,
-    transactionsFrom
+    transactionsFromHeight
 };

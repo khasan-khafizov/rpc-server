@@ -50,6 +50,8 @@ function startServer(port){
     server.get('/:network/account/:address', account.get);
     server.post('/:network/account/bip38', account.createBip38);
     server.post('/:network/account', account.create);
+    server.get('/:network/account/transactions/:address', account.getTransactions);
+
     server.get('/:network/transactions/:address', account.getTransactions);
     server.post('/:network/transaction/bip38', transaction.createBip38);
     server.post('/:network/transaction', transaction.create);
@@ -62,7 +64,7 @@ function startServer(port){
     server.get('/:network/peek/transactions/:cursor', transaction.peekTransactions);
 
     // returns no more than 1000 tx that occurred at or after the given block height
-    server.get('/:network/transactions/fromHeight/:height', transaction.transactionsFrom);
+    server.get('/:network/transactions/fromHeight/:height', transaction.transactionsFromHeight);
 
     server.listen(port, function() {
       console.log('persona-rpc listening at %s', server.url);
