@@ -63,8 +63,10 @@ function startServer(port){
     // returns the tx at given cursor (i-th overall, no filtering)
     server.get('/:network/peek/transactions/:cursor', transaction.peekTransactions);
 
-    // returns no more than 1000 tx that occurred at or after the given block height
+    // returns all txs between [height, height+1000), ordered ascending by height.
     server.get('/:network/transactions/fromHeight/:height', transaction.transactionsFromHeight);
+    // same as above, but can also specify the account address
+    server.get('/:network/account/:address/fromHeight/:height', transaction.transactionsFromHeight);
 
     server.listen(port, function() {
       console.log('persona-rpc listening at %s', server.url);

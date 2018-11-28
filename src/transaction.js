@@ -17,9 +17,10 @@ function get(req, res, next) {
 
 function createBip38(req, res, next) {
     account.getBip38Keys(req.params.userid, req.params.bip38).then(function (acc) {
-        var transaction = personajs.transaction.createTransaction(req.params.recipientId, req.params.amount, null, "dummy");
+        var transaction = personajs.transaction.createTransaction(req.params.recipientId, req.params.amount, null, req.params.bip38, null, '66', false);
         transaction.senderPublicKey = acc.keys.getPublicKeyBuffer().toString("hex");
         delete transaction.signature;
+        delete transaction.secret;
         personajs.crypto.sign(transaction, acc.keys);
         transaction.id = personajs.crypto.getId(transaction);
         leveldb.setObject(transaction.id, transaction).then(function () {
@@ -31,14 +32,14 @@ function createBip38(req, res, next) {
         }).catch(function (err) {
             res.send({
                 success: false,
-                err : err
+                err: err
             });
             next();
         });
     }).catch(function (err) {
         res.send({
             success: false,
-            err : err
+            err: err
         });
         next();
     });
@@ -46,7 +47,7 @@ function createBip38(req, res, next) {
 
 function create(req, res, next) {
     var amount = parseInt(req.params.amount);
-    var transaction = personajs.transaction.createTransaction(req.params.recipientId, amount, null, req.params.passphrase);
+    var transaction = personajs.transaction.createTransaction(req.params.recipientId, amount, null, req.params.passphrase, null, '66', false);
     leveldb.setObject(transaction.id, transaction).then(function () {
         res.send({
             success: true,
@@ -102,7 +103,7 @@ function broadcast(req, res, next) {
     }).catch(function (err) {
         res.send({
             success: false,
-            err : 'Transaction not found in the local database'
+            err: 'Transaction not found in the local database'
         });
         next();
     });
@@ -131,70 +132,72 @@ function peekTransactions(req, res, next) {
     body.blocks = [];
     let offset = req.params.cursor;
 
-    network.getFromNode(`/api/transactions?offset=`+offset, function (err, response, body) {
-            body = JSON.parse(body);
-            body = body.transactions ? body.transactions[0] : body;
-            res.send(body);
-            next();
+    network.getFromNode(`/api/transactions?offset=` + offset, function (err, response, body) {
+        body = JSON.parse(body);
+        body = body.transactions ? body.transactions[0] : body;
+        res.send(body);
+        next();
     })
+}
+
+function curateTransactions(transactions) {
+
+    return transactions.map((transaction, index, transactions) => {
+
+        let transactionObj = {};
+        transactionObj.id = transaction.id;
+        transactionObj.type = transaction.type;
+        transactionObj.amount = transaction.amount;
+        transactionObj.fee = transaction.fee;
+        transactionObj.senderId = transaction.senderId;
+        transactionObj.senderPublicKey = transaction.senderPublicKey;
+        transactionObj.recipientId = transaction.recipientId;
+        transactionObj.timestamp = transaction.timestamp;
+
+        return transactionObj;
+
+    });
 }
 
 function transactionsFromHeight(req, res, next) {
     let body = {};
-    // we must retrieve tx after the previous block,
-    // because tx are created before the corresponding (hosting) blocks, we must use the previous block's timestamp as the cutoff point
-    // unless the given height is 1, is which case there is no previous block timestamp to check after
-    let height = req.params.height > 1 ? req.params.height-1 : 1;
-
-    network.getFromNode(`/api/blocks?height=` + height,  function (err, response, body) {
-        body = JSON.parse(body);
-        let cutOffTimestamp = body.blocks[0].timestamp;
-        if (cutOffTimestamp === 0 && req.params.height === '1' ) {
-            cutOffTimestamp = -1; // do not allow 0 to be a cutoff timestamp, for height = '1'
-        }
-
-        network.getFromNode(`/api/transactions?offset=0`, function (err, response, body) {
-            body = JSON.parse(body);
-            let transactionCount = body.count;
-            let transactions = [];
-            let currentOffset = transactionCount;
-            let isDone = false;
-            let iteration = 0;
-            let limit=50;
-            async.doWhilst(
-                function (cb) {
-                    iteration++;
-                    if (currentOffset < 50) {
-                        limit = currentOffset;
-                        currentOffset = 0;
-                    } else {
-                        currentOffset = currentOffset - 50;
-                    }
-                    network.getFromNode(`/api/transactions?offset=` + currentOffset +`&limit=` + limit, function (err, response, body) {
-                        body = JSON.parse(body);
-                        if (body.transactions[0].timestamp < cutOffTimestamp) {
-                            isDone = true;
-                        }
-                        transactions = body.transactions
-                            .filter(tr => (tr.timestamp > cutOffTimestamp))
-                            .concat(transactions);
-                        cb();
-                    });
-                }, function () {
-                    return iteration <= 20 && currentOffset > 0 && !isDone;
-                }, function (err) {
-                    if (err) {
-                        next();
-                    } else {
-                        res.send({
-                            transactionCount: transactions.length,
-                            transactions: transactions
-                        });
-                        next();
-                    }
+    let transactions = [];
+    let address = req.params.address;
+    let height = req.params.height;
+    let i = 0;
+    async.doWhilst(
+        function (cb) {
+            let currHeight = (100 * i) + +height;
+            currHeight--;
+            let url = `/peer/blocks?lastBlockHeight=` + currHeight;
+            network.getFromNode(url, function (err, response, body) {
+                body = JSON.parse(body);
+                let blocks = body.blocks.filter(block => (block.numberOfTransactions > 0));
+                let txsAgg = [];
+                blocks.forEach(block => {
+                    txsAgg = txsAgg.concat(block.transactions)
                 })
+                if (address) {
+                    txsAgg = txsAgg.filter(transaction => transaction.senderId === address || transaction.recipientId === address);
+                }
+                txsAgg = curateTransactions(txsAgg);
+                transactions = transactions.concat(txsAgg);
+                i++;
+                cb();
+            })
+        }, function () {
+            return i < 10;
+        }, function (err) {
+            if (err) {
+                next();
+            } else {
+                res.send({
+                    transactionCount: transactions.length,
+                    transactions: transactions
+                });
+                next();
+            }
         })
-    })
 }
 
 module.exports = {

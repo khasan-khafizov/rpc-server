@@ -7,8 +7,15 @@ var network = null,
 
 var networks = {
   testnet: {
+    messagePrefix: '\x18Testnet Signed Message:\n',
+      bip32: {
+          public: 0x043587cf,
+          private: 0x04358394
+      },
     name: "testnet",
     nethash: "a6a53c0da7822012da6de41cdcaef2ecad885c7df2fc97011e5c40c5684f80a9",
+    pubKeyHash: 0x42,
+    wif: 0x50,
     slip44: 1,
     version: 66,
     peers: [
@@ -105,24 +112,29 @@ function postTransaction(transaction, cb) {
 }
 
 function broadcast(transaction, callback) {
-  network.peers.slice(0, 10).forEach(function (peer) {
+    let length = network.peers.length
+    let itemsProcessed = 0;
+    network.peers.forEach(function (peer) {
 
-    request({
-      url: `http://${peer}/peer/transactions`,
-      headers: {
-        nethash: network.nethash,
-        version: '1.0.0',
-        port: 1
-      },
-      method: 'POST',
-      json: true,
-      body: {transactions: [transaction]}
-    }, function(err, res, body) {
-        callback(body)
+        let uri = {
+            url: `http://${peer}/peer/transactions`,
+            headers: {
+                nethash: network.nethash,
+                version: '1.0.0',
+                port: 1
+            },
+            method: 'POST',
+            json: true,
+            body: {transactions: [transaction]}
+        };
+        request(uri, function (err, res, body) {
+            itemsProcessed++;
+            if (itemsProcessed === length) {
+                callback(body);
+            }
+        });
     });
-  });
 }
-
 
 function connect2network(netw, callback) {
   network = netw;
@@ -166,5 +178,6 @@ module.exports = {
   broadcast,
   connect,
   getFromNode,
-  postTransaction
+  postTransaction,
+    networks
 };
