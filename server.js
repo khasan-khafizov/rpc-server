@@ -57,6 +57,9 @@ function startServer(port){
     server.post('/:network/transaction', transaction.create);
     server.post('/:network/broadcast', transaction.broadcast);
 
+    server.get('/:network/transaction/:id', transaction.getTransaction);
+    server.post('/:network/transactions/', transaction.postTransaction);
+
     // returns block at given height
     server.get('/:network/peek/blocks/:height', transaction.peekBlocks);
 

@@ -2,6 +2,7 @@ var personajs = require('personajs');
 var account = require('./account');
 var network = require('./network');
 var leveldb = require('./leveldb');
+var bs58check = require('bs58check');
 var async = require('async');
 
 function get(req, res, next) {
@@ -19,6 +20,7 @@ function createBip38(req, res, next) {
     account.getBip38Keys(req.params.userid, req.params.bip38).then(function (acc) {
         var transaction = personajs.transaction.createTransaction(req.params.recipientId, req.params.amount, null, req.params.bip38, null, '66', false);
         transaction.senderPublicKey = acc.keys.getPublicKeyBuffer().toString("hex");
+        transaction.userid = req.params.userid;
         delete transaction.signature;
         delete transaction.secret;
         personajs.crypto.sign(transaction, acc.keys);
@@ -140,6 +142,61 @@ function peekTransactions(req, res, next) {
     })
 }
 
+function getTransaction(req, res, next) {
+
+    let body = {};
+    body.blocks = [];
+    let id = req.params.id;
+
+    network.getFromNode(`/api/transactions/get?id=` + id, function (err, response, body) {
+        body = JSON.parse(body);
+        body = body.transactions ? body.transactions[0] : body;
+        res.send(body);
+        next();
+    })
+}
+
+function postTransaction(req, res, next) {
+
+    let networkObj = null;
+    if (req.params.network === 'testnet') {
+        networkObj = {network: network.networks.testnet}
+    }
+
+    network.getFromNode(`/api/transactions/get?id=` + req.params.id, function (err, response, body) {
+        if (JSON.parse(body).success) {
+            res.send({
+                success: false,
+                err: 'Transaction already exists'
+            });
+            next();
+        } else {
+            leveldb.getObject(req.params.id).then(function (transaction) {
+
+                account.getBip38Keys(transaction.userid, req.params.bip38, networkObj).then(function (acc) {
+                    let address = acc.keys.getAddress();
+                    network.getFromNode(`/api/accounts?address=${address}`, function (err, response, body) {
+                        let x = JSON.parse(body);
+                        if (x.account.balance < transaction.amount + transaction.fee) {
+                            res.send({
+                                success: false,
+                                err: 'Insufficient funds'
+                            });
+                            next();
+                        } else {
+                            network.postTransaction(transaction, function (err, response, body) {
+                                res.send(body);
+                                next();
+                            })
+                        }
+                    })
+                })
+            })
+        }
+    })
+
+}
+
 function curateTransactions(transactions) {
 
     return transactions.map((transaction, index, transactions) => {
@@ -208,5 +265,7 @@ module.exports = {
     getAll,
     peekBlocks,
     peekTransactions,
-    transactionsFromHeight
+    transactionsFromHeight,
+    getTransaction,
+    postTransaction
 };

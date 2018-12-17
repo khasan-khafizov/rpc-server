@@ -56,7 +56,7 @@ function getBip38Keys(userid, bip38password, network) {
             });
         }
 
-        return Promise.reject(new Error("Could not founf WIF"));
+        return Promise.reject(new Error("Could not find WIF"));
     });
 }
 
