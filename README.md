@@ -38,7 +38,71 @@ If you want to create several accounts for one user, you need to use a different
 - Create a transaction using `bip38` for `userid`: `POST /:network/transaction/bip38` params: `recipientId`, `amount` in satoshis, `bip38` (password to encode wif), `userid`
 - Broadcast transaction: `POST /:network/broadcast` params: `id` of the transaction
 
+FOLLOWING APIS return all txs between [height, height+1000) (account address filter can be provided), ordered ascending by height.
+
+GET testnet/transactions/fromHeight/{height}
+	- example : /testnet/transactions/fromHeight/1019272
+GET testnet/account/{address}/fromHeight/{height}
+	- example : /testnet/account/Tuo2S5FsZL74k8axgL73JVcNo9PSfM8kPc/fromHeight/1018192
+
 Note that if the transaction has been created via the RPC it has been stored internally, as such only the transaction `id` is needed to broadcast/rebroadcast it. Otherwise if created outside of this RPC server, pass the whole transaction body as the POST payload.
+
+## Basic Flow :
+
+STEP 1 : CREATE ACCOUNT
+
+POST /testnet/account/bip38
+BODY
+{
+  "bip38":"beep beep boop",
+  "userid":"777822f71a814e45cf9ea9de31b05a7e86f4a8e8f25fa2caf34c4effc645d8a8"
+}
+RESPONSE
+{
+"success": true,
+"publicKey": "035ac124d365e1290eb4b64f55f2deface2d17f332f87c5d15829ad87d78437b8b",
+"address": "TkWrTYhQjYt6KTN4obmepxG4ttfWhJYARj",
+"wif": "6PYQHiF4Te2LdBayLkuJAX5mem91Dzro1CBHt2B2TPEHQTiHX7vGVaMXeD"
+}
+
+STEP 2 : CREDIT the account <TkWrTYhQjYt6KTN4obmepxG4ttfWhJYARj> with tokens ( or alternatively use an existing recipient at step 3 )
+
+STEP 3 : CREATE TX ( SENDER IS THE RECIPIENT IN THE EXAMPLE BELOW )
+
+POST /testnet/transaction/bip38
+BODY
+{
+"amount":1,
+"bip38":"beep beep boop",
+"recipientId": "TkWrTYhQjYt6KTN4obmepxG4ttfWhJYARj",
+"userid":"777822f71a814e45cf9ea9de31b05a7e86f4a8e8f25fa2caf34c4effc645d8a8"
+}
+
+RESPONSE
+{
+"success": true,
+"transaction":{
+"type": 0,
+"amount": 1,
+"fee": 10000000,
+"recipientId": "TkWrTYhQjYt6KTN4obmepxG4ttfWhJYARj",
+"timestamp": 53317749,
+"asset":{},
+"senderPublicKey": "035ac124d365e1290eb4b64f55f2deface2d17f332f87c5d15829ad87d78437b8b",
+"id": "8e87adcb8695c24cf94097274b059e1d3920f24b48d544ba6a2479a2d33dcd96",
+"signature": "30440220507fe0c43afb568f653571b0cb8eefb7b16c76e3a9fe2bfc05ca401c9810ee48022060c4d62949bd0a117ce8c07c489fcd7823923b6b9cfa3109742b89caa3127f39"
+}
+}
+
+STEP 4 : BROADCAST TX
+
+POST /testnet/broadcast
+
+{"id":"8e87adcb8695c24cf94097274b059e1d3920f24b48d544ba6a2479a2d33dcd96"}
+
+STEP 5 : SEE IN EXPLORER
+
+https://testnet-explorer.persona.im/#/transaction/8e87adcb8695c24cf94097274b059e1d3920f24b48d544ba6a2479a2d33dcd96
 
 ## Security
 
