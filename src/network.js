@@ -72,7 +72,6 @@ function findEnabledPeers(cb) {
       if (err || !body || !body.peers) {
           return cb(peers);
       }
-  console.log(body);
       var respeers = body.peers.filter(function (peer) {
           return peer.status == "OK";
       }).map(function (peer) {

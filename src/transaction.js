@@ -5,6 +5,9 @@ var leveldb = require('./leveldb');
 var bs58check = require('bs58check');
 var async = require('async');
 
+const BASE_URL_GET_TX_BY_ID_V1 = '/api/transactions/get?id=';
+const BASE_URL_GET_TX_BY_ID_V2 = '/api/v2/transactions/';
+
 function get(req, res, next) {
     network.getFromNode(`/api/transactions/get?id=${req.params.id}`, function (err, response, body) {
         if (err) next();
@@ -128,6 +131,23 @@ function peekBlocks(req, res, next) {
     })
 }
 
+function peekBlocksV2(req, res, next) {
+
+    let body = {};
+    body.blocks = [];
+    let offset = 0;
+
+    network.getFromNode(`/api/v2/blocks?offset=0`, function (err, response, body) {
+        body = JSON.parse(body);
+        offset = body.blocks[0].height - req.params.height;
+        network.getFromNode(`/api/v2/blocks?limit=1&offset=` + offset, function (err, response, body) {
+            body = JSON.parse(body);
+            res.send(body);
+            next();
+        })
+    })
+}
+
 function peekTransactions(req, res, next) {
 
     let body = {};
@@ -142,13 +162,42 @@ function peekTransactions(req, res, next) {
     })
 }
 
+function peekTransactionsV2(req, res, next) {
+
+    let body = {};
+    body.blocks = [];
+    let offset = req.params.cursor;
+
+    network.getFromNode(`/api/v2/transactions?offset=` + offset, function (err, response, body) {
+        body = JSON.parse(body);
+        body = body.transactions ? body.transactions[0] : body;
+        res.send(body);
+        next();
+    })
+}
+
+
 function getTransaction(req, res, next) {
 
     let body = {};
     body.blocks = [];
     let id = req.params.id;
 
-    network.getFromNode(`/api/transactions/get?id=` + id, function (err, response, body) {
+    network.getFromNode(BASE_URL_GET_TX_BY_ID_V1 + id, function (err, response, body) {
+        body = JSON.parse(body);
+        body = body.transactions ? body.transactions[0] : body;
+        res.send(body);
+        next();
+    })
+}
+
+function getTransactionV2(req, res, next) {
+
+    let body = {};
+    body.blocks = [];
+    let id = req.params.id;
+
+    network.getFromNode(BASE_URL_GET_TX_BY_ID_V2 + id, function (err, response, body) {
         body = JSON.parse(body);
         body = body.transactions ? body.transactions[0] : body;
         res.send(body);
@@ -262,10 +311,12 @@ module.exports = {
     createBip38,
     get,
     broadcast,
-    getAll,
     peekBlocks,
+    peekBlocksV2,
     peekTransactions,
+    peekTransactionsV2,
     transactionsFromHeight,
     getTransaction,
+    getTransactionV2,
     postTransaction
 };

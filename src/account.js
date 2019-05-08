@@ -17,6 +17,17 @@ function get(req, res, next) {
     });
 }
 
+function getV2(req, res, next) {
+    network.getFromNode(`/api/v2/wallets/` + `${req.params.address}`, function (err, response, body) {
+        if (err) next();
+        else {
+            body = JSON.parse(body);
+            res.send(body);
+            next();
+        }
+    });
+}
+
 function getTransactions(req, res, next) {
     const offset = req.query.offset || 0;
     network.getFromNode(`/api/transactions?offset=${offset}&orderBy=timestamp:desc&senderId=${req.params.address}&recipientId=${req.params.address}`, function (err, response, body) {
@@ -28,6 +39,19 @@ function getTransactions(req, res, next) {
         }
     });
 }
+
+function getTransactionsV2(req, res, next) {
+    const offset = req.query.offset || 0;
+    network.getFromNode(`/api/v2/transactions?offset=${offset}&orderBy=timestamp:desc&senderId=${req.params.address}&recipientId=${req.params.address}`, function (err, response, body) {
+        if (err) next();
+        else {
+            body = JSON.parse(body);
+            res.send(body);
+            next();
+        }
+    });
+}
+
 
 function getBip38Account(req, res, next) {
     leveldb.getUTF8(personajs.crypto.sha256(Buffer.from(req.params.userid)).toString('hex')).then(function (wif) {
@@ -125,9 +149,11 @@ function create(req, res, next) {
 
 module.exports = {
     get,
+    getV2,
     getBip38Account,
     getBip38Keys,
     getTransactions,
+    getTransactionsV2,
     create,
     createBip38
 };
