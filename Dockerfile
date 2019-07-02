@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:10-alpine
 
 RUN apk add --no-cache make gcc g++ python git
 
@@ -11,4 +11,4 @@ RUN cd /src/persona-rpc \
 WORKDIR /src/persona-rpc
 ENTRYPOINT ["forever","./server.js"]
 
-EXPOSE 8080
+EXPOSE 9999
